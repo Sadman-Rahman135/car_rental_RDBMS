@@ -90,12 +90,41 @@ def create_tables():
         # Create RENTAL  table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Rental (
-                car_id VARCHAR(50) PRIMARY KEY,
-                model VARCHAR(100),
-                seats INT,
-                availability_status VARCHAR(20)
+               rental_id VARCHAR(50) PRIMARY KEY,
+               customer_id VARCHAR(50),
+               car_type VARCHAR(50),
+               pickup_date TIMESTAMP,
+               dropoff_date TIMESTAMP,
+               pickup_location VARCHAR(100),
+               dropoff_location VARCHAR(100),
+               duration NUMERIC,
+               payment_status VARCHAR(20),
+               assigned_driver VARCHAR(50),
+               car_number_plate VARCHAR(20),
+               status VARCHAR(20),
+               FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+               FOREIGN KEY (assigned_driver) REFERENCES Driver(driver_id),
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
             )
         ''')
+        # Create REQUEST  table
+        cursor.execute('''
+           CREATE TABLE IF NOT EXISTS Rental (
+               request_id VARCHAR(50) PRIMARY KEY,
+               rental_id VARCHAR(50),
+               driver_id VARCHAR(50),
+               car_number_plate VARCHAR(20),
+               pickup_date TIMESTAMP,
+               dropoff_date TIMESTAMP,
+               status VARCHAR(20),
+               total_amount NUMERIC,
+               payment_id VARCHAR(50),
+               FOREIGN KEY (request_id) REFERENCES Request(request_id),
+               FOREIGN KEY (driver_id) REFERENCES Driver(driver_id),
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
+            )
+        ''')
+
 
         # Commit the changes
         connection.commit()
