@@ -1,6 +1,61 @@
 import streamlit as st
 import bcrypt
-from database import create_user_CarOwner, authenticate_user
+from database import create_user_customer, create_user_driver, create_user_CarOwner, authenticate_user
+
+def registerCustomer():
+    st.title("Customer Registration")
+     # Input fields for customer data
+    first_name = st.text_input("First Name")
+    last_name = st.text_input("Last Name")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    phone = st.text_input("Phone Number")
+    address = st.text_area("Address")
+    account_status = st.selectbox("Account Status", ["active", "inactive"])
+
+
+
+    if st.button("Register"):
+        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        st.write(f"Hashed Password Length: {len(hashed_pw)}")
+        if not all([first_name, last_name, email, password, phone, address, account_status]):
+            st.error("Please fill in all the fields.")
+        else:
+            try:
+                create_user_customer(first_name, last_name, email, password, phone, address, account_status)
+                st.success("Customer registered successfully!")
+                st.session_state.logged_in = True
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+
+def registerDriver():
+    st.title("Driver Registration")
+     # Input fields for customer data
+    first_name = st.text_input("First Name")
+    last_name = st.text_input("Last Name")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    phone = st.text_input("Phone Number")
+    address = st.text_area("Address")
+    location = st.text_input("Location(City)")
+    license_number = st.text_input("License Number")
+    account_status = st.selectbox("Account Status", ["active", "inactive"])
+
+
+
+    if st.button("Register"):
+        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        st.write(f"Hashed Password Length: {len(hashed_pw)}")
+
+        if not all([first_name, last_name, email, password, phone, address, location, license_number, account_status]):
+                st.error("Please fill in all the fields.")
+        else:
+            try:
+                create_user_driver(first_name, last_name, email, password, phone, address, location, license_number, account_status)
+                st.success("Driver registered successfully!")
+                st.session_state.logged_in = True
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
 def registerCarOwner():
     st.title("Car Owner Registration")
@@ -19,13 +74,15 @@ def registerCarOwner():
     if st.button("Register"):
         hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         st.write(f"Hashed Password Length: {len(hashed_pw)}")
-
-        try:
-            create_user_CarOwner(first_name, last_name, email, password, phone, address, location, account_status)
-            st.success("Car Owner registered successfully!")
-            st.session_state.logged_in = True
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+        if not all([first_name, last_name, email, password, phone, address, location, account_status]):
+                st.error("Please fill in all the fields.")
+        else:
+            try:
+                create_user_CarOwner(first_name, last_name, email, password, phone, address, location, account_status)
+                st.success("Car Owner registered successfully!")
+                st.session_state.logged_in = True
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
 def login(role):
     st.title(f"{role} Login")

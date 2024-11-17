@@ -45,7 +45,7 @@ if role == "🧑‍🤝‍🧑 Car Owner":
     carOwner_action = st.radio("Choose an action", ["Login", "Registration"])
 
     if carOwner_action == "Registration":
-        st.header("Customer Registration")
+        st.header("Car Owner Registration")
 
         # Input fields for customer data
         first_name = st.text_input("First Name")

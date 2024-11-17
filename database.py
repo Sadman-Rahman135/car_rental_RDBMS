@@ -9,6 +9,30 @@ def connect():
         user="postgres",
     )
 
+def create_user_customer(first_name, last_name, email, password, phone, address, account_status):
+    conn = connect()
+    cur = conn.cursor()
+    customer_id = str(uuid.uuid4())
+    cur.execute(
+        "INSERT INTO Customer (customer_id, first_name, last_name, email, password, phone, address, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+        (customer_id, first_name, last_name, email, password, phone, address,  account_status)
+        )
+    #user_id = cur.fetchone()[0]
+    conn.commit()
+    conn.close()
+
+def create_user_driver(first_name, last_name, email, password, phone, address, location,license_number, account_status):
+    conn = connect()
+    cur = conn.cursor()
+    driver_id = str(uuid.uuid4())
+    cur.execute(
+        "INSERT INTO Driver (driver_id, first_name, last_name, email, password, phone, address, location, license_number, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+        (driver_id, first_name, last_name, email, password, phone, address, location, license_number, account_status)
+        )
+    #user_id = cur.fetchone()[0]
+    conn.commit()
+    conn.close()
+
 def create_user_CarOwner(first_name, last_name, email, password, phone, address, location, account_status):
     conn = connect()
     cur = conn.cursor()
