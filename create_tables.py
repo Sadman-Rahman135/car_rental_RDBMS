@@ -73,7 +73,9 @@ def create_tables():
                 phone VARCHAR(20),
                 address TEXT,
                 location VARCHAR(100),
-                account_status VARCHAR(20)
+                account_status VARCHAR(20),
+                car_type VARCHAR(50),  -- New attribute
+                car_id VARCHAR(50)     -- New attribute
     
             )
         ''')
@@ -107,7 +109,7 @@ def create_tables():
                status VARCHAR(20),
                FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
                FOREIGN KEY (assigned_driver) REFERENCES Driver(driver_id),
-               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_number)
             )
         ''')
         # Create REQUEST  table
@@ -124,7 +126,7 @@ def create_tables():
                payment_id VARCHAR(50),
                FOREIGN KEY (request_id) REFERENCES Request(request_id),
                FOREIGN KEY (driver_id) REFERENCES Driver(driver_id),
-               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_number)
             )
         ''')
 

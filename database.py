@@ -7,6 +7,8 @@ def connect():
         host="localhost",
         database="car_rent_RDBMS",
         user="postgres",
+        password="sahil",
+        port=5000
     )
 
 def create_user_customer(first_name, last_name, email, password, phone, address, account_status):
@@ -38,7 +40,7 @@ def create_user_CarOwner(first_name, last_name, email, password, phone, address,
     cur = conn.cursor()
     owner_id = str(uuid.uuid4())
     cur.execute(
-        "INSERT INTO Car_Owner (owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+        "INSERT INTO Car_Owner (car_owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (owner_id, first_name, last_name, email, password, phone, address, location, account_status)
         )
     #user_id = cur.fetchone()[0]
