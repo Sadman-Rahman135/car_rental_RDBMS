@@ -8,8 +8,8 @@ connection = psycopg2.connect(
         host="localhost",
         database="car_rent_RDBMS",
         user="postgres",
-        password="sahil",
-        port=5000
+        password="nfm143786007",
+        port=5432
     )
 cursor = connection.cursor()
    # st.write("Connected to the database successfully.")

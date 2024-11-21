@@ -102,7 +102,7 @@ def login(role):
 def get_table_name(role):
     return {
         "👨‍💼 Admin": "admin",
-        "🧑‍🤝‍🧑 Car Owner": "car_owner",
+        "🚗 Car Owner": "car_owner",
         "🧑‍🤝‍🧑 Customer": "customer",
         "🚚 Driver": "driver"
     }[role]
