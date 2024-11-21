@@ -2,7 +2,7 @@ import streamlit as st
 import bcrypt
 from database import create_user_customer, create_user_driver, create_user_CarOwner, authenticate_user
 
-def registerCustomer():
+def registerCustomer():  #Customer Registration
     st.title("Customer Registration")
      # Input fields for customer data
     first_name = st.text_input("First Name")
@@ -28,7 +28,7 @@ def registerCustomer():
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
-def registerDriver():
+def registerDriver():  #Driver registration
     st.title("Driver Registration")
      # Input fields for customer data
     first_name = st.text_input("First Name")
@@ -57,10 +57,10 @@ def registerDriver():
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
-def registerCarOwner():
+def registerCarOwner(): # Car owner registration
     st.title("Car Owner Registration")
      # Input fields for customer data
-    first_name = st.text_input("First Name")
+    first_name = st.text_input("First Name ")
     last_name = st.text_input("Last Name")
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
