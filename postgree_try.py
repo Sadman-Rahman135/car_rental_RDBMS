@@ -2,6 +2,7 @@ import streamlit as st
 import psycopg2
 from psycopg2 import sql
 import uuid
+#import carOwner
 
 
 # Connect to PostgreSQL server
@@ -9,8 +10,8 @@ connection = psycopg2.connect(
     host="localhost",
     database="car_rent",
     user="postgres",
-    password="sahil",
-    port=5000
+    password="nfm143786007",
+    port=5432
 )
 cursor = connection.cursor()
 
@@ -35,9 +36,65 @@ st.title("Car Rental System 🚗")
 
 # Sidebar for role selection
 st.sidebar.title("User Role Selection")
-role = st.sidebar.selectbox("Select your role", ["👨‍💼 Admin", "🧑‍🤝‍🧑 Customer", "🚚 Driver"])
+role = st.sidebar.selectbox("Select your role", ["👨‍💼 Admin","🧑‍🤝‍🧑 Car Owner", "🧑‍🤝‍🧑 Customer", "🚚 Driver"])
+if role == "🧑‍🤝‍🧑 Car Owner":
+    # Customer Login or Registration
+    st.markdown("### Welcome to our car rental app! 🧑‍🤝‍🧑")
+    st.markdown("<small>If you have an account, then Login or select Registration.</small>", unsafe_allow_html=True)
 
-if role == "🧑‍🤝‍🧑 Customer":
+    carOwner_action = st.radio("Choose an action", ["Login", "Registration"])
+
+    if carOwner_action == "Registration":
+        st.header("Car Owner Registration")
+
+        # Input fields for customer data
+        first_name = st.text_input("First Name")
+        last_name = st.text_input("Last Name")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        phone = st.text_input("Phone Number")
+        address = st.text_area("Address")
+        location = st.text_area("Location(City)")
+        account_status = st.selectbox("Account Status", ["active", "inactive"])
+
+        # Submit button
+        if st.button("Register"):
+            # Check if all fields are filled
+            if not all([first_name, last_name, email, password, phone, address, location, account_status]):
+                st.error("Please fill in all the fields.")
+            else:
+                # Generate a unique customer ID
+                owner_id = str(uuid.uuid4())
+
+                # Insert the data into the Customer table
+                try:
+                    cursor.execute(
+                        "INSERT INTO Car_Owner (owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                        (owner_id, first_name, last_name, email, password, phone, address, location, account_status)
+                    )
+                    connection.commit()
+                    st.success("Car Owner registered successfully!")
+
+                    st.query_params["owner"]=owner_id
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
+
+    elif carOwner_action == "Login":
+        st.header("Car Owner Login")
+        login_email = st.text_input("Email")
+        login_password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            # Check credentials in the database
+            cursor.execute("SELECT * FROM Car_Owner WHERE email=%s AND password=%s", (login_email, login_password))
+            carOwner = cursor.fetchone()
+            if carOwner:
+                st.success(f"Welcome back, {carOwner[1]}!")
+            else:
+                st.error("Invalid email or password.")
+
+elif role == "🧑‍🤝‍🧑 Customer":
     # Customer Login or Registration
     st.markdown("### Welcome to our car rental app! 🧑‍🤝‍🧑")
     st.markdown("<small>If you have an account, then Login or select Registration.</small>", unsafe_allow_html=True)

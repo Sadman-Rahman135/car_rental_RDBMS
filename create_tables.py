@@ -6,15 +6,16 @@ import uuid  # To generate unique IDs
 #try:
 connection = psycopg2.connect(
         host="localhost",
-        database="car_rent",
+        database="car_rent_RDBMS",
         user="postgres",
-        password="kyo29sue",
-        port=5432
+        password="sahil",
+        port=5000
     )
-cursor = connection.cursor()
-   # st.write("Connected to the database successfully.")
-#except Exception as e:
-    #st.error(f"Error connecting to the database: {e}")
+    cursor = connection.cursor()
+    st.write("Connected to the database successfully.")
+except Exception as e:
+    st.error(f"Error connecting to the database: {e}")
+
 
 
 
@@ -61,36 +62,41 @@ def create_tables():
             )
         ''')
 
-        # Create Car table
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Car (
-                car_id VARCHAR(50) PRIMARY KEY,
-                model VARCHAR(100),
-                seats INT,
-                availability_status VARCHAR(20)
-            )
-        ''')
         
         # Create Car_OWNER table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Car_Owner (
-                owner_id VARCHAR(50) PRIMARY KEY,
+                car_owner_id VARCHAR(50) PRIMARY KEY,
                 first_name VARCHAR(100),
                 last_name VARCHAR(100),
                 email VARCHAR(100) UNIQUE,
-                password VARCHAR(100),
+                password VARCHAR(200),
                 phone VARCHAR(20),
                 address TEXT,
                 location VARCHAR(100),
-                account_status VARCHAR(20)
+                account_status VARCHAR(20),
+                car_type VARCHAR(50),  -- New attribute
+                car_id VARCHAR(50)     -- New attribute
     
             )
         ''')
         
+        # Create Car table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Car (
+                car_number VARCHAR(50) PRIMARY KEY,
+                model VARCHAR(100),
+                seats INT,
+                car_owner_id VARCHAR(100),
+                availability_status VARCHAR(20),
+                FOREIGN KEY (car_owner_id) REFERENCES Car_Owner(car_owner_id)
+            )
+        ''')
+
         # Create RENTAL  table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Rental (
-               rental_id VARCHAR(50) PRIMARY KEY,
+            CREATE TABLE IF NOT EXISTS Request (
+               request_id VARCHAR(50) PRIMARY KEY,
                customer_id VARCHAR(50),
                car_type VARCHAR(50),
                pickup_date TIMESTAMP,
@@ -104,14 +110,14 @@ def create_tables():
                status VARCHAR(20),
                FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
                FOREIGN KEY (assigned_driver) REFERENCES Driver(driver_id),
-               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_number)
             )
         ''')
         # Create REQUEST  table
         cursor.execute('''
            CREATE TABLE IF NOT EXISTS Rental (
-               request_id VARCHAR(50) PRIMARY KEY,
-               rental_id VARCHAR(50),
+               rental_id VARCHAR(50) PRIMARY KEY,
+               request_id VARCHAR(50),
                driver_id VARCHAR(50),
                car_number_plate VARCHAR(20),
                pickup_date TIMESTAMP,
@@ -121,10 +127,9 @@ def create_tables():
                payment_id VARCHAR(50),
                FOREIGN KEY (request_id) REFERENCES Request(request_id),
                FOREIGN KEY (driver_id) REFERENCES Driver(driver_id),
-               FOREIGN KEY (car_number_plate) REFERENCES Car(car_id)
+               FOREIGN KEY (car_number_plate) REFERENCES Car(car_number)
             )
         ''')
-
 
         # Commit the changes
         connection.commit()
@@ -139,11 +144,11 @@ create_tables()
 
 
 
-# # Function to insert data into the Admin table
-# def insert_admin(username, password, email):
-#     try:
-#         # Generate a random UUID for admin_id
-#         admin_id = str(uuid.uuid4())
+# Function to insert data into the Admin table
+def insert_admin(username, password, email):
+    try:
+        # Generate a random UUID for admin_id
+        admin_id = str(uuid.uuid4())
 
 #         # Insert query including admin_id
 #         insert_query = """
