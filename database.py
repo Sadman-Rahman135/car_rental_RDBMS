@@ -38,10 +38,10 @@ def create_user_driver(first_name, last_name, email, password, phone, address, l
 def create_user_CarOwner(first_name, last_name, email, password, phone, address, location, account_status):
     conn = connect()
     cur = conn.cursor()
-    owner_id = str(uuid.uuid4())
+    car_owner_id = str(uuid.uuid4())
     cur.execute(
-        "INSERT INTO Car_Owner (owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-        (owner_id, first_name, last_name, email, password, phone, address, location, account_status)
+        "INSERT INTO Car_Owner (car_owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+        (car_owner_id, first_name, last_name, email, password, phone, address, location, account_status)
         )
     #user_id = cur.fetchone()[0]
     conn.commit()

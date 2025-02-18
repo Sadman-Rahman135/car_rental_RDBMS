@@ -2,6 +2,7 @@ import streamlit as st
 import psycopg2
 from psycopg2 import sql
 import uuid
+#import carOwner
 
 
 # Connect to PostgreSQL server
@@ -9,8 +10,8 @@ connection = psycopg2.connect(
     host="localhost",
     database="car_rent",
     user="postgres",
-    password="sahil",
-    port=5000
+    password="nfm143786007",
+    port=5432
 )
 cursor = connection.cursor()
 
@@ -36,7 +37,6 @@ st.title("Car Rental System 🚗")
 # Sidebar for role selection
 st.sidebar.title("User Role Selection")
 role = st.sidebar.selectbox("Select your role", ["👨‍💼 Admin","🧑‍🤝‍🧑 Car Owner", "🧑‍🤝‍🧑 Customer", "🚚 Driver"])
-
 if role == "🧑‍🤝‍🧑 Car Owner":
     # Customer Login or Registration
     st.markdown("### Welcome to our car rental app! 🧑‍🤝‍🧑")
@@ -70,10 +70,13 @@ if role == "🧑‍🤝‍🧑 Car Owner":
                 try:
                     cursor.execute(
                         "INSERT INTO Car_Owner (owner_id, first_name, last_name, email, password, phone, address, location, account_status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                        (owner_id, first_name, last_name, email, password, phone, address, account_status)
+                        (owner_id, first_name, last_name, email, password, phone, address, location, account_status)
                     )
                     connection.commit()
                     st.success("Car Owner registered successfully!")
+
+                    st.query_params["owner"]=owner_id
+                    st.rerun()
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
 

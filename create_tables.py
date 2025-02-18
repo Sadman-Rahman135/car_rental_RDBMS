@@ -17,8 +17,6 @@ cursor = connection.cursor()
     #st.error(f"Error connecting to the database: {e}")
 
 
-
-
 def create_tables():
     #try:
         # Create Customer table
@@ -140,6 +138,8 @@ def create_tables():
         connection.rollback()
 
 create_tables()
+
+
 
 
 

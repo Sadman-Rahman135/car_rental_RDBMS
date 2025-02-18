@@ -16,13 +16,14 @@ def registerCustomer():  #Customer Registration
 
 
     if st.button("Register"):
-        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-        st.write(f"Hashed Password Length: {len(hashed_pw)}")
+        hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        print(f"Hashed Password length : {len(hashed_pw)}")
+        print(f"Hashed Password : {hashed_pw}")
         if not all([first_name, last_name, email, password, phone, address, account_status]):
             st.error("Please fill in all the fields.")
         else:
             try:
-                create_user_customer(first_name, last_name, email, password, phone, address, account_status)
+                create_user_customer(first_name, last_name, email, hashed_pw, phone, address, account_status)
                 st.success("Customer registered successfully!")
                 st.session_state.logged_in = True
             except Exception as e:
@@ -44,14 +45,14 @@ def registerDriver():  #Driver registration
 
 
     if st.button("Register"):
-        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         st.write(f"Hashed Password Length: {len(hashed_pw)}")
 
         if not all([first_name, last_name, email, password, phone, address, location, license_number, account_status]):
                 st.error("Please fill in all the fields.")
         else:
             try:
-                create_user_driver(first_name, last_name, email, password, phone, address, location, license_number, account_status)
+                create_user_driver(first_name, last_name, email, hashed_pw, phone, address, location, license_number, account_status)
                 st.success("Driver registered successfully!")
                 st.session_state.logged_in = True
             except Exception as e:
@@ -72,13 +73,13 @@ def registerCarOwner(): # Car owner registration
 
 
     if st.button("Register"):
-        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         st.write(f"Hashed Password Length: {len(hashed_pw)}")
         if not all([first_name, last_name, email, password, phone, address, location, account_status]):
                 st.error("Please fill in all the fields.")
         else:
             try:
-                create_user_CarOwner(first_name, last_name, email, password, phone, address, location, account_status)
+                create_user_CarOwner(first_name, last_name, email, hashed_pw, phone, address, location, account_status)
                 st.success("Car Owner registered successfully!")
                 st.session_state.logged_in = True
             except Exception as e:
@@ -92,12 +93,25 @@ def login(role):
     if st.button("Login"):
         table_name = get_table_name(role)
         user = authenticate_user(table_name, email, password)
-        if user[1]==password:
-            st.session_state.user_id = user[0]
-            st.session_state.role = role
-            st.session_state.logged_in = True
-        else:
-            st.error("Invalid credentials.")
+
+        if user is None:
+            st.error("User not found")
+            return
+        
+        stored_hash = user[1]
+        if not stored_hash:
+            st.error("Stored password hash is missing")
+            return
+        
+        try:
+            if bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):
+                st.session_state.user_id = user[0]
+                st.session_state.role = role
+                st.session_state.logged_in = True
+            else:
+                st.error("Invalid credentials.")
+        except ValueError as e:
+            st.error(f"Password verification error: {e}")
 
 def get_table_name(role):
     return {
