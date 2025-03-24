@@ -103,6 +103,16 @@ def login(role):
             st.error("Stored password hash is missing")
             return
         
+        if table_name == 'admin':
+            if user and user[1]==password:
+                st.session_state.user_id=user[0]
+                st.session_state.role = role
+                st.session_state.logged_in = True
+                st.success("Logged in as Admin!")
+            else:
+                st.error("Invalid credentials.")
+            return
+        
         try:
             if bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):
                 st.session_state.user_id = user[0]

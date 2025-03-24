@@ -8,13 +8,13 @@ connection = psycopg2.connect(
         host="localhost",
         database="car_rent_RDBMS",
         user="postgres",
-        password="sahil",
-        port=5000
+        password="nfm143786007",
+        port=5432
     )
-    cursor = connection.cursor()
-    st.write("Connected to the database successfully.")
-except Exception as e:
-    st.error(f"Error connecting to the database: {e}")
+cursor = connection.cursor()
+    ##st.write("Connected to the database successfully.")
+#except Exception as e:
+   # st.error(f"Error connecting to the database: {e}")
 
 
 
@@ -74,9 +74,7 @@ def create_tables():
                 phone VARCHAR(20),
                 address TEXT,
                 location VARCHAR(100),
-                account_status VARCHAR(20),
-                car_type VARCHAR(50),  -- New attribute
-                car_id VARCHAR(50)     -- New attribute
+                account_status VARCHAR(20)
     
             )
         ''')
@@ -84,11 +82,13 @@ def create_tables():
         # Create Car table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Car (
-                car_number VARCHAR(50) PRIMARY KEY,
+                car_id SERIAL PRIMARY KEY,
+                car_number VARCHAR(50) UNIQUE,
                 model VARCHAR(100),
                 seats INT,
                 car_owner_id VARCHAR(100),
                 availability_status VARCHAR(20),
+                car_type VARCHAR(50),  
                 FOREIGN KEY (car_owner_id) REFERENCES Car_Owner(car_owner_id)
             )
         ''')
@@ -146,7 +146,7 @@ create_tables()
 
 # Function to insert data into the Admin table
 def insert_admin(username, password, email):
-    try:
+    #try:
         # Generate a random UUID for admin_id
         admin_id = str(uuid.uuid4())
 

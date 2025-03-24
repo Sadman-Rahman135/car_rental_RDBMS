@@ -25,16 +25,23 @@ if st.session_state.logged_in:
 else:
     role = st.sidebar.selectbox("Select your role", ["👨‍💼 Admin", "🚗 Car Owner", "🧑‍🤝‍🧑 Customer", "🚚 Driver"])
     action = st.sidebar.selectbox("Action", ["Login", "Register"])
-    if action == "Login":
+    
+    if role == "👨‍💼 Admin":
         login(role)
-    elif action == "Register":
-        if role == "👨‍💼 Admin":
+        st.write("Admin can only login")
+    elif role == "🚗 Car Owner":
+        if action == "Login":
             login(role)
-            st.write("Admin can only login")
-        elif role == "🚗 Car Owner":
+        elif action == "Register":
             registerCarOwner()
-        elif role == "🧑‍🤝‍🧑 Customer":
+    elif role == "🧑‍🤝‍🧑 Customer":
+        if action == "Login":
+            login(role)
+        elif action == "Register":
             registerCustomer()
-        elif role == "🚚 Driver":
+    elif role == "🚚 Driver":
+        if action == "Login":
+            login(role)
+        elif action == "Register":
             registerDriver()
         
