@@ -33,8 +33,9 @@ def show_dashboard():
 
     # Section: View Your Cars
     st.header("View Your Cars")
+
     cur.execute("""
-        SELECT car_number, model, seats, availability_status
+        SELECT car_number, model, seats, availability_status, car_type
         FROM car 
         WHERE car_owner_id = %s
     """, (st.session_state.user_id,))

@@ -7,8 +7,8 @@ def connect():
         host="localhost",
         database="car_rent_RDBMS",
         user="postgres",
-        password="nfm143786007",
-        port=5432
+        password="sahil",
+        port=5000
     )
 
 def create_user_customer(first_name, last_name, email, password, phone, address, account_status):
