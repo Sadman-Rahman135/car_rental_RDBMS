@@ -104,10 +104,11 @@ def login(role):
             return
         
         if table_name == 'admin':
-            if user and user[1]==password:
-                st.session_state.user_id=user[0]
+            if user and user[1] == password:
+                st.session_state.user_id = user[0]
                 st.session_state.role = role
                 st.session_state.logged_in = True
+                st.session_state.current_page = "dashboard"  # Set to dashboard
                 st.success("Logged in as Admin!")
             else:
                 st.error("Invalid credentials.")
@@ -118,6 +119,8 @@ def login(role):
                 st.session_state.user_id = user[0]
                 st.session_state.role = role
                 st.session_state.logged_in = True
+                st.session_state.current_page = "dashboard"  # Set to dashboard
+                st.success(f"Logged in as {role}!")
             else:
                 st.error("Invalid credentials.")
         except ValueError as e:

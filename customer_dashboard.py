@@ -6,6 +6,11 @@ import uuid
 
 def show_dashboard():
     st.title("Customer Dashboard")
+    # Back to Home button
+    if st.button("Back to Home"):
+        st.session_state.current_page = "home"
+        st.session_state.logged_in = False  # Optionally log out
+        st.session_state.role = None
 
     # Navigation within Customer Dashboard
     page = st.sidebar.selectbox("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars","Advanced Reports"])

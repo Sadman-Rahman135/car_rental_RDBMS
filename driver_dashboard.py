@@ -6,6 +6,12 @@ def show_dashboard():
     conn = connect()
     cur = conn.cursor()
 
+    # Back to Home button
+    if st.button("Back to Home"):
+        st.session_state.current_page = "home"
+        st.session_state.logged_in = False  # Optionally log out
+        st.session_state.role = None
+
     # Section: View All Booking Requests
     st.header("View All Booking Requests")
     cur.execute("""
