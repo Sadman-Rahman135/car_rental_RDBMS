@@ -315,10 +315,10 @@ def view_cars():
 def reports():
     st.header("Reports")
 
-    conn=connect()
-    cur=conn.cursor()
+    conn = connect()
+    cur = conn.cursor()
 
-    report_options =[
+    report_options = [
         "Car Reports",
         "Owner Reports",
         "Driver Reports",
@@ -326,49 +326,43 @@ def reports():
         "Yearly Income",
         "Driver Salary Report"
     ]
-
-    selected_report=st.selectbox("Select Report Type", report_options)
+    selected_report = st.selectbox("Select Report Type", report_options)
 
     try:
-        if selected_report=="Car Reports":
-            st.subheader("Car Reports")
+        if selected_report == "Car Reports":
+            #st.subheader("Car Reports")
+            st.markdown("**Car Reports Overview**")
             cur.execute("""
-                SELECT c.car_id, c.car_number, c.model, c.car_type, c.seats, COUNT(r.request_id) as booking_count
+                SELECT c.car_id, c.car_number, c.model, c.car_type, COUNT(r.request_id) as booking_count
                 FROM Car c
-                LEFT JOIN Request r ON c.car_number=r.car_number_plate
-                GROUP BY c.car_id, c.car_number, c.model, c.car_type, c.seats
+                LEFT JOIN Request r ON c.car_number = r.car_number_plate
+                GROUP BY c.car_id, c.car_number, c.model, c.car_type
                 ORDER BY booking_count DESC
-                        """)
-            cars=cur.fetchall()
-            for idx, cars in enumerate(cars, 1):
-                car_id, car_number, model, car_type,  seats, booking_count = cars
-            
-            # Color code status
-           
-            with st.expander(f"{idx}. {car_id} {model} ({booking_count})", expanded=False):
-                cols = st.columns([1, 3])
-                
-                with cols[0]:
-                    st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", 
-                            width=100, 
-                            caption=f"Car Number Plate: {car_number}")
-                    
-                with cols[1]:
-                    st.markdown(f"""
-                    **📧 Car ID:** {car_id}  
-                    **📞 Car Number:** {car_number}  
-                    **📍 Model:** {model}  
-                    **🏠 Seats:** {seats}  
-                    **🏠 Type:** {car_type}  
-                    **Count:** {booking_count}
-                    """)
+            """)
+            cars = cur.fetchall()
             if cars:
+                #st.write("Debug: Car Reports Data", cars)  # Debug output
+                col1,col2,col3,col4,col5=st.columns([1,2,2,2,1])
+                col1.markdown("**ID**")
+                col2.markdown("**Number**")
+                col3.markdown("**Model**")
+                col4.markdown("**Type**")
+                col5.markdown("**Booking Count**")
+                st.markdown("---")
                 for car in cars:
-                    st.write(f"Car ID: {car[0]}, Number: {car[1]}, Model: {car[2]}, Type: {car[3]}, Seats: {car[4]}, Booking: {car[5]}")
+                    col1,col2,col3,col4,col5=st.columns([1,2,2,2,1])
+                    col1.write(car[0])
+                    col2.write(car[1])
+                    col3.write(car[2])
+                    col4.write(car[3])
+                    col5.write(car[4])
+                    #st.write(f"Car ID: {car[0]}, Number: {car[1]}, Model: {car[2]}, Type: {car[3]}, Bookings: {car[4]}")
             else:
-                st.info("No car data available")
+                st.info("No car data available.")
+
         elif selected_report == "Owner Reports":
-            st.subheader("Owner Reports")
+            #st.subheader("Owner Reports")
+            st.markdown("**Owner Reports Overview**")
             cur.execute("""
                 SELECT co.car_owner_id, co.first_name || ' ' || co.last_name AS owner_name, 
                        COUNT(c.car_id) as car_count, COUNT(r.request_id) as booking_count
@@ -380,13 +374,26 @@ def reports():
             """)
             owners = cur.fetchall()
             if owners:
+                #st.write("Debug: Owner Reports Data", owners)  # Debug output
+                col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+                col1.markdown("**Owner ID**")
+                col2.markdown("**Name**")
+                col3.markdown("**Cars Owned**")
+                col4.markdown("**Bookings**")
+                st.markdown("---")
                 for owner in owners:
-                    st.write(f"Owner ID: {owner[0]}, Name: {owner[1]}, Cars Owned: {owner[2]}, Bookings: {owner[3]}")
+                    col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+                    col1.write(owner[0])
+                    col2.write(owner[1])
+                    col3.write(owner[2])
+                    col4.write(owner[3])
+                #for owner in owners:
+                    #st.write(f"Owner ID: {owner[0]}, Name: {owner[1]}, Cars Owned: {owner[2]}, Bookings: {owner[3]}")
             else:
                 st.info("No owner data available.")
 
         elif selected_report == "Driver Reports":
-            st.subheader("Driver Reports")
+            st.markdown("**Driver Report Overview**")
             cur.execute("""
                 SELECT d.driver_id, d.first_name || ' ' || d.last_name AS driver_name, 
                        COUNT(r.request_id) as booking_count
@@ -397,67 +404,120 @@ def reports():
             """)
             drivers = cur.fetchall()
             if drivers:
+                #st.write("Debug: Driver Reports Data", drivers)  # Debug output
+                
+                col1, col2, col3 = st.columns([3, 3, 2])
+                col1.markdown("**Driver ID**")
+                col2.markdown("**Name**")
+                col3.markdown("**Bookings**")
+                st.markdown("---")
                 for driver in drivers:
-                    st.write(f"Driver ID: {driver[0]}, Name: {driver[1]}, Bookings: {driver[2]}")
+                    col1, col2, col3 = st.columns([3, 3, 2])
+                    col1.write(driver[0])
+                    col2.write(driver[1])
+                    col3.write(driver[2])
+                #for driver in drivers:
+                 #   st.write(f"Driver ID: {driver[0]}, Name: {driver[1]}, Bookings: {driver[2]}")
             else:
                 st.info("No driver data available.")
 
         elif selected_report == "Monthly Income":
-            st.subheader("Monthly Income")
+            #st.subheader("Monthly Income")
+            st.markdown("**Monthly Income Overview**")
             year = st.number_input("Select Year", min_value=2020, max_value=2025, value=2025)
             cur.execute("""
                 SELECT EXTRACT(MONTH FROM r.pickup_date) AS month, 
-                       SUM(rental.total_amount) AS total_income
+                       COALESCE(SUM(rental.total_amount), 0) AS total_income
                 FROM Request r
-                JOIN Rental rental ON r.request_id = rental.request_id
+                LEFT JOIN Rental rental ON r.request_id = rental.request_id
                 WHERE EXTRACT(YEAR FROM r.pickup_date) = %s AND r.status = 'Completed'
                 GROUP BY EXTRACT(MONTH FROM r.pickup_date)
                 ORDER BY month
             """, (year,))
             income = cur.fetchall()
             if income:
-                for month, amount in income:
-                    st.write(f"Month: {int(month)}, Income: ${amount:.2f}")
+                #st.write("Debug: Monthly Income Data", income)  # Debug output
+                st.markdown(f"**Monthly Income for {year}**")
+                col1, col2 = st.columns([2, 2])
+                col1.markdown("**Month**")
+                col2.markdown("**Income ($)**")
+                st.markdown("---")
+                for row in income:
+                    if isinstance(row, (tuple, list)) and len(row) == 2:
+                        month, amount = row
+                        col1, col2 = st.columns([2, 2])
+                        col1.write(f"{int(month)}")
+                        col2.write(f"{float(amount):.2f}")
+                    else:
+                        st.error(f"Unexpected data format: {row}")
             else:
                 st.info("No income data for this year.")
 
         elif selected_report == "Yearly Income":
-            st.subheader("Yearly Income")
+            #st.subheader("Yearly Income")
+            st.markdown("**Yearly Income Overview**")
             cur.execute("""
                 SELECT EXTRACT(YEAR FROM r.pickup_date) AS year, 
-                       SUM(rental.total_amount) AS total_income
+                       COALESCE(SUM(rental.total_amount), 0) AS total_income
                 FROM Request r
-                JOIN Rental rental ON r.request_id = rental.request_id
+                LEFT JOIN Rental rental ON r.request_id = rental.request_id
                 WHERE r.status = 'Completed'
                 GROUP BY EXTRACT(YEAR FROM r.pickup_date)
                 ORDER BY year
             """)
             income = cur.fetchall()
             if income:
-                for year, amount in income:
-                    st.write(f"Year: {int(year)}, Income: ${amount:.2f}")
+                #st.write("Debug: Yearly Income Data", income)  # Debug output
+                st.markdown(f"**Monthly Income for {year}**")
+                col1, col2 = st.columns([2, 2])
+                col1.markdown("**Month**")
+                col2.markdown("**Income ($)**")
+                st.markdown("---")
+                for row in income:
+                    if isinstance(row, (tuple, list)) and len(row) == 2:
+                        month, amount = row
+                        col1, col2 = st.columns([2, 2])
+                        col1.write(f"{int(month)}")
+                        col2.write(f"{float(amount):.2f}")
+                    else:
+                        st.error(f"Unexpected data format: {row}")
             else:
                 st.info("No yearly income data available.")
 
         elif selected_report == "Driver Salary Report":
-            st.subheader("Driver Salary Report")
+           # st.subheader("Driver Salary Report")
+            st.markdown("**Driver Salary Report**")
             year = st.number_input("Select Year", min_value=2020, max_value=2025, value=2025)
             cur.execute("""
                 SELECT d.driver_id, d.first_name || ' ' || d.last_name AS driver_name,
-                       COUNT(r.request_id) AS bookings, SUM(rental.total_amount * 0.3) AS salary
+                       COUNT(r.request_id) AS bookings, 
+                       COALESCE(SUM(rental.total_amount * 0.3), 0) AS salary
                 FROM Driver d
                 LEFT JOIN Request r ON d.driver_id = r.assigned_driver
-                JOIN Rental rental ON r.request_id = rental.request_id
+                LEFT JOIN Rental rental ON r.request_id = rental.request_id
                 WHERE EXTRACT(YEAR FROM r.pickup_date) = %s AND r.status = 'Completed'
                 GROUP BY d.driver_id, d.first_name, d.last_name
                 ORDER BY salary DESC
             """, (year,))
             salaries = cur.fetchall()
             if salaries:
+                #st.write("Debug: Driver Salary Data", salaries)  # Debug output
+                st.markdown(f"**Driver Salary Report for {year}**")
+                col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+                col1.markdown("**Driver ID**")
+                col2.markdown("**Name**")
+                col3.markdown("**Bookings**")
+                col4.markdown("**Salary ($)**")
+                st.markdown("---")
                 for driver in salaries:
-                    st.write(f"Driver ID: {driver[0]}, Name: {driver[1]}, Bookings: {driver[2]}, Salary: ${driver[3]:.2f}")
+                    col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+                    col1.write(driver[0])
+                    col2.write(driver[1])
+                    col3.write(driver[2])
+                    col4.write(f"{float(driver[3]):.2f}")
             else:
                 st.info("No salary data for this year.")
+
     except Exception as e:
         st.error(f"Error generating report: {e}")
     finally:
