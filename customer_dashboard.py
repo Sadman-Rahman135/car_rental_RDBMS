@@ -5,7 +5,8 @@ import uuid
 
 def show_dashboard():
     st.title("Customer Dashboard")
-    if st.button("Back to Home"):
+    # Back to Home button
+    if st.sidebar.button("Back to Home"):
         st.session_state.current_page = "home"
         st.session_state.logged_in = False
         st.session_state.role = None

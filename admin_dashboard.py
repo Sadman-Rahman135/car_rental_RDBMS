@@ -8,7 +8,7 @@ def show_dashboard():
     st.title("Admin Dashboard")
 
     # Back to Home button
-    if st.button("Back to Home"):
+    if st.sidebar.button("Back to Home"):
         st.session_state.current_page = "home"
         st.session_state.logged_in = False  # Optionally log out
         st.session_state.role = None
@@ -587,6 +587,104 @@ def manage_requests():
                 st.error(f"Error canceling overdue requests: {str(e)}")
     else:
         st.info("No overdue requests found.")
+    conn.close()
+
+def ranking():
+    st.header("🏆 Rankings")
+
+    conn = connect()
+    cur = conn.cursor()
+
+    try:
+        # Selection for entity and criteria
+        col1, col2 = st.columns(2)
+        with col1:
+            entity= st.selectbox("Select Entity", ["Drivers", "Cars", "Customers"])
+        with col2:
+            criteria = st.selectbox("Select Criteria", ["Bookings", "Money"])
+
+        # Selection for entity and criteria
+        criteria_param = 'bookings' if criteria== "Bookings" else 'money'
+
+        # Map entity to procedure and display function
+        if entity == "Drivers":
+            display_driver_rankings(cur, criteria_param)
+        elif entity == "Cars":
+            display_car_rankings(cur, criteria_param)
+        elif entity == "Customers":
+            display_customer_rankings(cur, criteria_param)
+    except Exception as e:
+        st.error(f"Error generating rankings: {e}")
+    finally:
+        conn.close()
+
+def display_driver_rankings(cur, criteria):
+    st.subheader(f"Driver Rankings by {criteria.title()}")
+    cur.execute("BEGIN; CALL get_driver_rankings(%s, 'cursor'); FETCH ALL IN cursor;", (criteria,))
+    rankings = cur.fetchall()
+    cur.execute("COMMIT;")
+
+    if rankings:
+        col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+        col1.markdown("**Rank**")
+        col2.markdown("**Driver ID**")
+        col3.markdown("**Name**")
+        col4.markdown(f"**{criteria.title()}**")
+        st.markdown("---")
+        for driver_id, name, value, rank in rankings:
+            col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+            col1.write(rank)
+            col2.write(driver_id)
+            col3.write(name)
+            col4.write(f"{value:.2f}" if criteria == "money" else value)
+    else:
+        st.info(f"No driver rankings available for {criteria}.")
+
+def display_car_rankings(cur, criteria):
+    st.subheader(f"Car Rankings by {criteria.title()}")
+    cur.execute("BEGIN; CALL get_car_rankings(%s, 'cursor'); FETCH ALL IN cursor;", (criteria,))
+    rankings = cur.fetchall()
+    cur.execute("COMMIT;")
+
+    if rankings:
+        col1, col2, col3, col4, col5 = st.columns([2, 2, 3, 2, 2])
+        col1.markdown("**Rank**")
+        col2.markdown("**Car ID**")
+        col3.markdown("**Number Plate**")
+        col4.markdown("**Model**")
+        col5.markdown(f"**{criteria.title()}**")
+        st.markdown("---")
+        for car_id, car_number, model, value, rank in rankings:
+            col1, col2, col3, col4, col5 = st.columns([2, 2, 3, 2, 2])
+            col1.write(rank)
+            col2.write(car_id)
+            col3.write(car_number)
+            col4.write(model)
+            col5.write(f"{value:.2f}" if criteria == "money" else value)
+    else:
+        st.info(f"No car rankings available for {criteria}.")
+
+def display_customer_rankings(cur, criteria):
+    st.subheader(f"Customer Rankings by {criteria.title()}")
+    cur.execute("BEGIN; CALL get_customer_rankings(%s, 'cursor'); FETCH ALL IN cursor;", (criteria,))
+    rankings = cur.fetchall()
+    cur.execute("COMMIT;")
+
+    if rankings:
+        col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+        col1.markdown("**Rank**")
+        col2.markdown("**Customer ID**")
+        col3.markdown("**Name**")
+        col4.markdown(f"**{criteria.title()}**")
+        st.markdown("---")
+        for customer_id, name, value, rank in rankings:
+            col1, col2, col3, col4 = st.columns([2, 3, 2, 2])
+            col1.write(rank)
+            col2.write(customer_id)
+            col3.write(name)
+            col4.write(f"{value:.2f}" if criteria == "money" else value)
+    else:
+        st.info(f"No customer rankings available for {criteria}.")
 
 
     
