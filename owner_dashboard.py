@@ -1,5 +1,6 @@
 import streamlit as st
 from database import connect
+from utils import display_profile_update
 
 def show_dashboard():
     st.title("Car Owner Dashboard")

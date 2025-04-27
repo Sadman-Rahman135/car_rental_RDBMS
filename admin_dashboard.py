@@ -2,7 +2,7 @@ import streamlit as st
 import psycopg2
 from database import connect
 import uuid
-
+from utils import display_profile_update
 
 def show_dashboard():
     st.title("Admin Dashboard")
@@ -36,7 +36,7 @@ def show_dashboard():
     elif page == "Ranking":
         ranking()
     elif page == "Profile":
-        st.write("Customer Profile Page (Coming Soon).")
+        display_profile_update('admin')
     
 def view_drivers():
     st.header("🧑‍🔧 Driver Management")

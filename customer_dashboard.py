@@ -2,6 +2,7 @@ import streamlit as st
 import psycopg2
 from database import connect
 import uuid
+from utils import display_profile_update
 
 def show_dashboard():
     st.title("Customer Dashboard")
@@ -18,7 +19,7 @@ def show_dashboard():
     elif page == "View Bookings":
         view_bookings()
     elif page == "Profile":
-        st.write("Customer Profile Page (Coming Soon).")
+        display_profile_update('customer')
     elif page == "Cars":
         view_cars()
     elif page == "Advanced Reports":

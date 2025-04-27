@@ -1,5 +1,6 @@
 import streamlit as st
 from database import connect
+from utils import display_profile_update
 
 def show_dashboard():
     st.title("Driver Dashboard")
@@ -31,6 +32,7 @@ def show_dashboard():
     )
 
     if page == "Driver Profile":
+        display_profile_update('driver')
         show_driver_profile(cur, driver_id)
     elif page == "Available Bookings":
         show_available_bookings(cur, driver_id, conn)
