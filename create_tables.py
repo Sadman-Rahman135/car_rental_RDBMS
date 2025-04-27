@@ -286,6 +286,127 @@ def create_tables():
     EXECUTE FUNCTION update_driver_availability();
         ''')
 
+    #Procedure: Driver Ranking
+        cursor.execute('''
+            CREATE OR REPLACE PROCEDURE get_driver_rankings(
+            IN p_criteria VARCHAR,
+            INOUT p_result refcursor
+        )
+        LANGUAGE plpgsql AS $$
+        BEGIN
+            IF p_criteria = 'bookings' then
+                OPEN p_result FOR
+                SELECT
+                    d.driver_id,
+                    d.first_name || ' ' || d.last_name AS
+                    driver_name,
+                    COUNT(rental.rental_id) as booking_count,
+                    RANK() OVER (ORDER BY COUNT(rental.rental_id) DESC) AS rank
+                FROM Driver d
+                LEFT JOIN Rental rental ON d.driver_id=rental.driver_id
+                GROUP BY d.driver_id, d.first_name, d.last_name
+                ORDER BY rank;
+            ELSIF p_criteria = 'money' then
+                OPEN p_result for 
+                SELECT 
+                    d.driver_id,
+                    d.first_name || ' ' || d.last_name AS driver_name,
+                    COALESCE(SUM(rental.total_amount*0.3), 0)
+                    AS earnings,
+                    RANK() OVER (ORDER BY COALESCE(SUM(rental.total_amount*0.3), 0)
+                    DESC) AS rank
+                FROM Driver d
+                LEFT JOIN Rental rental ON d.driver_id=rental.driver_id
+                GROUP BY d.driver_id, d.first_name, d.last_name
+                ORDER BY rank;
+            ELSE 
+                RAISE EXCEPTION 'Invalid criteria: %', p_criteria;
+            END IF;
+        END;
+        $$
+        ''')
+
+    # Procedure: Car Rankings
+        cursor.execute('''
+            CREATE OR REPLACE PROCEDURE get_car_rankings(
+            IN p_criteria VARCHAR,
+            INOUT p_result refcursor
+        )
+        LANGUAGE plpgsql AS $$
+        BEGIN
+            IF p_criteria = 'bookings' then
+                OPEN p_result FOR
+                SELECT
+                    c.car_id,
+                    c.car_number,
+                    c.model,
+                    COUNT(rental.rental_id) as booking_count,
+                    RANK() OVER (ORDER by COUNT(rental.rental_id)
+                    DESC) AS rank
+                FROM Car c
+                LEFT JOIN Rental rental on 
+                rental.car_number_plate=c.car_number
+                GROUP BY c.car_id, c.car_number, c.model
+                ORDER BY rank;
+            ELSIF p_criteria = 'money' THEN
+                OPEN p_result FOR
+                SELECT
+                    c.car_id,
+                    c.car_number,
+                    c.model,
+                    COALESCE(SUM(rental.total_amount*0.6), 0) AS revenue,
+                    RANK() OVER (ORDER by COALESCE(SUM(rental.total_amount*0.6), 0)
+                    DESC) AS rank
+                FROM Car c
+                LEFT JOIN Rental rental on 
+                rental.car_number_plate=c.car_number
+                GROUP BY c.car_id, c.car_number, c.model
+                ORDER BY rank;
+            ELSE 
+                RAISE EXCEPTION 'Invalid criteria: %', p_criteria;
+            END IF;
+        END;
+        $$
+    ''')
+    # Procedure: Customer Rankings 
+        cursor.execute('''
+            CREATE OR REPLACE PROCEDURE get_customer_rankings(
+            IN p_criteria VARCHAR,
+            INOUT p_result refcursor
+        )
+        LANGUAGE plpgsql AS $$
+        BEGIN
+            IF p_criteria = 'bookings' THEN
+                OPEN p_result FOR
+                SELECT 
+                    c.customer_id,
+                    c.first_name || ' ' || c.last_name AS customer_name,
+                    COUNT(rental.rental_id) AS booking_count,
+                    RANK() OVER (ORDER BY COUNT(rental.rental_id) DESC) AS rank
+                FROM Customer c
+                LEFT JOIN Request r ON c.customer_id = r.customer_id
+                LEFT JOIN Rental rental ON r.request_id = rental.request_id
+                GROUP BY c.customer_id, c.first_name, c.last_name
+                ORDER BY rank;
+            ELSIF p_criteria = 'money' THEN
+                OPEN p_result FOR
+                SELECT 
+                    c.customer_id,
+                    c.first_name || ' ' || c.last_name AS customer_name,
+                    COALESCE(SUM(rental.total_amount), 0) AS spent,
+                    RANK() OVER (ORDER BY COALESCE(SUM(rental.total_amount), 0) DESC) AS rank
+                FROM Customer c
+                LEFT JOIN Request r ON c.customer_id = r.customer_id
+                LEFT JOIN Rental rental ON r.request_id = rental.request_id
+                GROUP BY c.customer_id, c.first_name, c.last_name
+                ORDER BY rank;
+            ELSE
+                RAISE EXCEPTION 'Invalid criteria: %', p_criteria;
+            END IF;
+        END;
+        $$;
+    ''')
+
 
         # Commit the changes
         connection.commit()
