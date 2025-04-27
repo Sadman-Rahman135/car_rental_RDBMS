@@ -3,17 +3,14 @@ import psycopg2
 from database import connect
 import uuid
 
-
 def show_dashboard():
     st.title("Customer Dashboard")
-    # Back to Home button
     if st.button("Back to Home"):
         st.session_state.current_page = "home"
-        st.session_state.logged_in = False  # Optionally log out
+        st.session_state.logged_in = False
         st.session_state.role = None
 
-    # Navigation within Customer Dashboard
-    page = st.sidebar.selectbox("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars","Advanced Reports"])
+    page = st.sidebar.selectbox("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars", "Advanced Reports"])
 
     if page == "Make a Booking":
         make_booking()
@@ -29,7 +26,6 @@ def show_dashboard():
 def make_booking():
     st.header("Make a Booking")
 
-    # Booking form
     car_type = st.selectbox("Car Type", ["Premio", "Corolla", "X Corolla", "Noah", "Wagon", "Truck"])
     pickup_date = st.date_input("Pickup Date")
     dropoff_date = st.date_input("Dropoff Date")
@@ -46,11 +42,24 @@ def make_booking():
                 conn = connect()
                 cur = conn.cursor()
 
-                # Generate unique request ID
-                request_id = str(uuid.uuid4())
-                customer_id = st.session_state.user_id  # Assuming user_id is stored in session state
+                # Find an available car of the selected type
+                cur.execute("""
+                    SELECT car_number
+                    FROM Car
+                    WHERE car_type = %s AND availability_status = 'Available'
+                    LIMIT 1
+                """, (car_type,))
+                car = cur.fetchone()
+                car_number = car[0] if car else None
 
-                # Insert into Request table
+                if not car_number:
+                    st.error(f"No available {car_type} cars found.")
+                    conn.close()
+                    return
+
+                request_id = str(uuid.uuid4())
+                customer_id = st.session_state.user_id
+
                 cur.execute(
                     '''
                     INSERT INTO Request (
@@ -58,19 +67,21 @@ def make_booking():
                         pickup_location, dropoff_location, duration, payment_status, 
                         assigned_driver, car_number_plate, status
                     ) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, NULL, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, %s, %s)
                     ''',
                     (
                         request_id, customer_id, car_type, pickup_date, dropoff_date,
-                        pickup_location, dropoff_location, duration, payment_status, "Pending"
+                        pickup_location, dropoff_location, duration, payment_status, car_number, "Pending"
                     )
                 )
 
                 conn.commit()
-                conn.close()
-                st.success("Booking submitted successfully!")
+                st.success(f"Booking submitted successfully with car {car_number}!")
             except Exception as e:
+                conn.rollback()
                 st.error(f"An error occurred: {e}")
+            finally:
+                conn.close()
 
 def view_bookings():
     st.header("Your Bookings")
@@ -159,21 +170,6 @@ def advanced_reports():
     cur = conn.cursor()
     customer_id = st.session_state.user_id
 
-    # if selected_report == "Booking Cost Trend":
-    #     st.subheader("Booking Cost Trend")
-    #     cur.execute("""
-    #         SELECT pickup_date, calculate_rental_cost(duration, car_type) AS cost
-    #         FROM Request
-    #         WHERE customer_id = %s AND status IN ('Accepted', 'Completed')
-    #         ORDER BY pickup_date
-    #     """, (customer_id,))
-    #     costs = cur.fetchall()
-    #     if costs:
-    #         for date, cost in costs:
-    #             st.write(f"Date: {date}, Cost: ${cost}")
-    #     else:
-    #         st.info("No cost data available.")
-
     if selected_report == "Driver Assignment History":
         st.subheader("Driver Assignment History")
         cur.execute("""
@@ -191,48 +187,27 @@ def advanced_reports():
             st.info("No driver assignment history.")
 
     elif selected_report == "Recursive Car Usage Chain":
-
         st.subheader("Recursive Car Usage Chain by Car Type")
-
         car_type = st.selectbox("Select Car Type", ["Premio", "Corolla", "X Corolla", "Noah", "Wagon", "Truck"])
-
         if st.button("Show Chain"):
-
             cur.execute("""
-        
-                    WITH RECURSIVE car_usage AS (
-        
-                        SELECT request_id, car_type, pickup_date, dropoff_date
-        
-                        FROM Request
-        
-                        WHERE customer_id = %s AND car_type = %s AND status = 'Accepted'
-        
-                        UNION ALL
-        
-                        SELECT r.request_id, r.car_type, r.pickup_date, r.dropoff_date
-        
-                        FROM Request r
-        
-                        INNER JOIN car_usage cu ON r.car_type = cu.car_type
-        
-                        WHERE r.pickup_date > cu.dropoff_date AND r.customer_id = %s
-        
-                    )
-        
-                    SELECT * FROM car_usage ORDER BY pickup_date
-        
-                """, (customer_id, car_type, customer_id))
-
+                WITH RECURSIVE car_usage AS (
+                    SELECT request_id, car_type, pickup_date, dropoff_date
+                    FROM Request
+                    WHERE customer_id = %s AND car_type = %s AND status = 'Accepted'
+                    UNION ALL
+                    SELECT r.request_id, r.car_type, r.pickup_date, r.dropoff_date
+                    FROM Request r
+                    INNER JOIN car_usage cu ON r.car_type = cu.car_type
+                    WHERE r.pickup_date > cu.dropoff_date AND r.customer_id = %s
+                )
+                SELECT * FROM car_usage ORDER BY pickup_date
+            """, (customer_id, car_type, customer_id))
             chain = cur.fetchall()
-
             if chain:
-
                 for row in chain:
                     st.write(f"Request ID: {row[0]}, Car Type: {row[1]}, Dates: {row[2]} to {row[3]}")
-
             else:
-
                 st.info(f"No usage chain found for car type '{car_type}'.")
 
     elif selected_report == "Popular Pickup Locations":
@@ -269,6 +244,3 @@ def advanced_reports():
             st.info("No bookings to summarize.")
 
     conn.close()
-
-    # except Exception as e:
-    #     st.error(f"An error occurred in advanced reports: {e}")

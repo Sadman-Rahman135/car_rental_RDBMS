@@ -6,15 +6,14 @@ def show_dashboard():
     conn = connect()
     cur = conn.cursor()
 
-    # Back to Home button
     if st.button("Back to Home"):
         st.session_state.current_page = "home"
-        st.session_state.logged_in = False  # Optionally log out
+        st.session_state.logged_in = False
         st.session_state.role = None
 
-    # Get the driver_id from session state (set during login)
     if "user_id" not in st.session_state:
         st.error("Please log in to access the driver dashboard.")
+        conn.close()
         return
     driver_id = st.session_state.user_id
     page = st.sidebar.selectbox(
@@ -29,7 +28,7 @@ def show_dashboard():
             "Past Completed Bookings",
         ]
     )
-    # Page logic based on selection
+
     if page == "Driver Profile":
         show_driver_profile(cur, driver_id)
     elif page == "Available Bookings":
@@ -39,12 +38,11 @@ def show_dashboard():
     elif page == "Earnings":
         show_earnings(cur, driver_id)
     elif page == "Booking History Chain":
-        show_booking_chain(cur, driver_id) 
+        show_booking_chain(cur, driver_id)
     elif page == "Performance Analytics":
         show_performance_analytics(cur, driver_id)
     elif page == "Past Completed Bookings":
         show_past_completed_bookings(cur, driver_id)
-   
 
     conn.close()
 
@@ -52,10 +50,7 @@ def show_driver_profile(cur, driver_id):
     st.header("👤 Driver Profile")
     cur.execute("""
         SELECT CONCAT(first_name, ' ', last_name) AS full_name, 
-               email, 
-               phone, 
-               license_number, 
-               account_status 
+               email, phone, license_number, account_status 
         FROM Driver 
         WHERE driver_id = %s
     """, (driver_id,))
@@ -137,7 +132,10 @@ def show_current_assignments(cur, driver_id, conn):
                         UPDATE Request 
                         SET status = 'Completed' 
                         WHERE request_id = %s
+                        RETURNING car_number_plate
                     """, (request_id,))
+                    car_number = cur.fetchone()[0]
+                    cur.execute("CALL finalize_booking(%s, %s, %s)", (request_id, driver_id, car_number))
                     conn.commit()
                     st.success(f"Booking {request_id} marked as completed!")
                 except Exception as e:
@@ -175,7 +173,7 @@ def show_performance_analytics(cur, driver_id):
         st.info("No performance data available.")
 
 def show_past_completed_bookings(cur, driver_id):
-    st.header("📜 Past Completed Bookings")
+    st.header("📜 Past Completed Bookings")
     cur.execute("""
         SELECT request_id, customer_id, car_type, pickup_date, dropoff_date, 
                pickup_location, dropoff_location, duration, payment_status, 

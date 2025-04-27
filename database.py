@@ -7,7 +7,7 @@ def connect():
         host="localhost",
         database="car_rent_RDBMS",
         user="postgres",
-        password="nfm143786007",
+        password="kyo29sue",
         port=5432
     )
 
