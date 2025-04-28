@@ -16,7 +16,7 @@ def show_dashboard():
     if st.button("Refresh Dashboard"):
         st.rerun()
 
-    page = st.sidebar.selectbox(
+    page = st.sidebar.radio(
         "Navigation",
         [
             "Owner Profile",
@@ -31,7 +31,8 @@ def show_dashboard():
     )
 
     if page == "Owner Profile":
-        show_owner_profile(cur, st.session_state.user_id)
+        display_profile_update('car_owner')
+        #show_owner_profile(cur, st.session_state.user_id)
     elif page == "Add a Car":
         add_car(cur, conn)
     elif page == "View Your Cars":

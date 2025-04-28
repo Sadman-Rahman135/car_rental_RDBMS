@@ -11,6 +11,9 @@ def show_dashboard():
         st.session_state.current_page = "home"
         st.session_state.logged_in = False
         st.session_state.role = None
+    
+    if st.button("Refresh Dashboard"):
+        st.rerun()
 
     page = st.sidebar.selectbox("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars", "Advanced Reports"])
 

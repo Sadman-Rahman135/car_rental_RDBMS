@@ -13,12 +13,9 @@ def show_dashboard():
         st.session_state.logged_in = False  # Optionally log out
         st.session_state.role = None
 
-    # Navigation within Customer Dashboard
-    # st.sidebar.header("Select Option")
-    # page = st.sidebar.button("View Car Lists")
-    # page = st.sidebar.button("View Driver Lists")
-    # page = st.sidebar.button("Profile")
-    #page = st.sidebar.selectbox("Select Option", ["View Car Lists", "View Driver Lists", "Profile"])
+    if st.button("Refresh Dashboard"):
+        st.rerun()
+        
     page = st.sidebar.radio(
         "Select Option",
         ["View Car Lists", "View Driver Lists", "Reports", "Manage Requests", "Ranking", "Profile"],

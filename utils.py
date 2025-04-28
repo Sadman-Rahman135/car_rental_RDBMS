@@ -59,7 +59,7 @@ def display_profile_update(old_role):
         st.error("You must be logged in to update your profile.")
         return
     
-    st.subheader("Profile Information")
+    st.subheader("👤Profile Information")
     conn=connect()
     try:
         cur = conn.cursor()
@@ -176,7 +176,7 @@ def display_profile_update(old_role):
                     if new_email and new_email != email:
                         if not validate_email(new_email):
                             errors.append("Invalid email format.")
-                        elif not check_email_unique(new_email, user_id, table, id_field, conn):
+                        elif not check_email_unique(new_email, user_id, table, conn):
                             errors.append("Email is already in use by another user.")
                         else:
                             update_fields.append("email = %s")

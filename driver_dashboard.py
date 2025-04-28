@@ -13,6 +13,9 @@ def show_dashboard():
         st.session_state.logged_in = False
         st.session_state.role = None
 
+    if st.button("Refresh Dashboard"):
+        st.rerun()
+
     if "user_id" not in st.session_state:
         st.error("Please log in to access the driver dashboard.")
         conn.close()
@@ -33,7 +36,7 @@ def show_dashboard():
 
     if page == "Driver Profile":
         display_profile_update('driver')
-        show_driver_profile(cur, driver_id)
+        #show_driver_profile(cur, driver_id)
     elif page == "Available Bookings":
         show_available_bookings(cur, driver_id, conn)
     elif page == "Current Assignments":
