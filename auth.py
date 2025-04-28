@@ -2,6 +2,7 @@ import streamlit as st
 import bcrypt
 from database import create_user_customer, create_user_driver, create_user_CarOwner, authenticate_user
 from email_verify import send_verification_email,verify_code,generate_verification_code
+from utils import validate_email, validate_phone
 def registerCustomer():  #Customer Registration
     st.title("Customer Registration")
      # Input fields for customer data
@@ -21,6 +22,10 @@ def registerCustomer():  #Customer Registration
         print(f"Hashed Password : {hashed_pw}")
         if not all([first_name, last_name, email, password, phone, address, account_status]):
             st.error("Please fill in all the fields.")
+        elif not validate_phone(phone):
+            st.error("Incorrect phone format")
+        elif not validate_email(email):
+            st.error("Incorrect email format")
         else:
             try:
                 create_user_customer(first_name, last_name, email, hashed_pw, phone, address, account_status)
@@ -50,6 +55,10 @@ def registerDriver():  #Driver registration
 
         if not all([first_name, last_name, email, password, phone, address, location, license_number, account_status]):
                 st.error("Please fill in all the fields.")
+        elif not validate_phone(phone):
+            st.error("Incorrect phone format")
+        elif not validate_email(email):
+            st.error("Incorrect email format")
         else:
             # Generate and send verification code
             verification_code = generate_verification_code()
@@ -59,7 +68,7 @@ def registerDriver():  #Driver registration
                 if user_code:
                     # Verify the code
                     if verify_code(verification_code, user_code):
-                        print("verifiedd")
+                        print("verified")
                         try:
                             create_user_customer(first_name, last_name, email, hashed_pw, phone, address,
                                                  account_status)
@@ -99,6 +108,10 @@ def registerCarOwner(): # Car owner registration
         st.write(f"Hashed Password Length: {len(hashed_pw)}")
         if not all([first_name, last_name, email, password, phone, address, location, account_status]):
                 st.error("Please fill in all the fields.")
+        elif not validate_phone(phone):
+            st.error("Incorrect phone format")
+        elif not validate_email(email):
+            st.error("Incorrect email format")
         else:
             try:
                 create_user_CarOwner(first_name, last_name, email, hashed_pw, phone, address, location, account_status)
