@@ -3,6 +3,7 @@ import psycopg2
 from database import connect
 import uuid
 from utils import display_profile_update
+from reports import new_reports
 
 def show_dashboard():
     st.title("Admin Dashboard")
@@ -27,7 +28,8 @@ def show_dashboard():
     elif page == "View Driver Lists":
         view_drivers()
     elif page == "Reports":
-        reports()
+        new_reports()
+        #reports()
     elif page == "Manage Requests":
         manage_requests()
     elif page == "Ranking":

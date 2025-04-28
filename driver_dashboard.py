@@ -1,6 +1,7 @@
 import streamlit as st
 from database import connect
-from utils import display_profile_update
+from customer_dashboard import car_rate
+from utils import display_profile_update, phone_from_id
 
 def show_dashboard():
     st.title("Driver Dashboard")
@@ -21,7 +22,7 @@ def show_dashboard():
         conn.close()
         return
     driver_id = st.session_state.user_id
-    page = st.sidebar.selectbox(
+    page = st.sidebar.radio(
         "Navigation",
         [
             "Driver Profile",
@@ -85,17 +86,32 @@ def show_available_bookings(cur, driver_id, conn):
     if bookings:
         for request in bookings:
             request_id, customer_id, car_type, pickup_date, dropoff_date, pickup_location, dropoff_location, duration, payment_status, car_number_plate, status = request
+            rate=car_rate(car_type)
+            payment=float(rate)*float(duration)*0.3
             with st.expander(f"Request ID: {request_id} - {car_type}"):
-                st.write(f"Customer ID: {customer_id}")
-                st.write(f"Car Type: {car_type}")
-                st.write(f"Pickup Date: {pickup_date}")
-                st.write(f"Dropoff Date: {dropoff_date}")
-                st.write(f"Pickup Location: {pickup_location}")
-                st.write(f"Dropoff Location: {dropoff_location}")
-                st.write(f"Duration: {duration} hours")
-                st.write(f"Payment Status: {payment_status}")
-                st.write(f"Car Number Plate: {car_number_plate if car_number_plate else 'Not Assigned'}")
-                st.write(f"Status: {status}")
+                with st.container():
+                    st.markdown(f"<h5 style='color: #34495e;'>🆔 Basic Information</h5>", unsafe_allow_html=True)
+                    st.markdown(f"<b>Customer ID:</b> {customer_id}", unsafe_allow_html=True)
+                    st.markdown("---")
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.markdown(f"<h5 style='color: #34495e;'>🚘 Car & Booking Details</h5>", unsafe_allow_html=True)
+                        st.markdown(f"**Car Type:** {car_type}")
+                        st.markdown(f"**Pickup Date:** {pickup_date}")
+                        st.markdown(f"**Dropoff Date:** {dropoff_date}")
+                        st.markdown(f"**Pickup Location:** {pickup_location}")
+                        st.markdown(f"**Dropoff Location:** {dropoff_location}")
+
+                    with col2:
+                        st.markdown(f"<h5 style='color: #34495e;'>💳 Payment & Status</h5>", unsafe_allow_html=True)
+                        st.markdown(f"**Duration:** {duration} hours")
+                        st.markdown(f"**Payment:** ${payment}")
+                        st.markdown(f"**Payment Status:** {payment_status}")
+                        st.markdown(f"**Car Number Plate:** {car_number_plate if car_number_plate else 'Not Assigned'}")
+                        st.markdown(f"**Status:** {status}")
+
                 if st.button("Accept Booking", key=f"accept-{request_id}"):
                     try:
                         cur.execute("CALL assign_driver_booking(%s, %s)", (driver_id, request_id))
@@ -121,33 +137,55 @@ def show_current_assignments(cur, driver_id, conn):
     if assignments:
         for request in assignments:
             request_id, customer_id, car_type, pickup_date, dropoff_date, pickup_location, dropoff_location, duration, payment_status, car_number_plate, status = request
-            st.write(f"Request ID: {request_id}")
-            st.write(f"Customer ID: {customer_id}")
-            st.write(f"Car Type: {car_type}")
-            st.write(f"Pickup Date: {pickup_date}")
-            st.write(f"Dropoff Date: {dropoff_date}")
-            st.write(f"Pickup Location: {pickup_location}")
-            st.write(f"Dropoff Location: {dropoff_location}")
-            st.write(f"Duration: {duration} hours")
-            st.write(f"Payment Status: {payment_status}")
-            st.write(f"Car Number Plate: {car_number_plate if car_number_plate else 'Not Assigned'}")
-            st.write(f"Status: {status}")
-            if st.button("Mark as Completed", key=f"complete-{request_id}"):
-                try:
-                    cur.execute("""
-                        UPDATE Request 
-                        SET status = 'Completed' 
-                        WHERE request_id = %s
-                        RETURNING car_number_plate
-                    """, (request_id,))
-                    car_number = cur.fetchone()[0]
-                    cur.execute("CALL finalize_booking(%s, %s, %s)", (request_id, driver_id, car_number))
-                    conn.commit()
-                    st.success(f"Booking {request_id} marked as completed!")
-                except Exception as e:
-                    conn.rollback()
-                    st.error(f"Error: {str(e)}")
-            st.markdown("---")
+            rate=car_rate(car_type)
+            payment=float(rate)*float(duration)*0.3
+            phone=phone_from_id('customer', customer_id)
+            # Main container with some nice styling
+            with st.expander(f"Request ID: {request_id} - {car_type}"):
+                with st.container():
+                    
+                    # Basic Info
+                    st.markdown(f"<h5 style='color: #34495e;'>🆔 Basic Information</h5>", unsafe_allow_html=True)
+                    st.markdown(f"<b>Request ID:</b> {request_id}<br><b>Customer ID:</b> {customer_id}", unsafe_allow_html=True)
+                    st.markdown("---")
+
+                    # Split detailed info
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.markdown(f"<h5 style='color: #34495e;'>🚘 Car & Booking Details</h5>", unsafe_allow_html=True)
+                        st.markdown(f"**Phone:** {phone}")
+                        st.markdown(f"**Car Type:** {car_type}")
+                        st.markdown(f"**Pickup Date:** {pickup_date}")
+                        st.markdown(f"**Dropoff Date:** {dropoff_date}")
+                        st.markdown(f"**Pickup Location:** {pickup_location}")
+                        st.markdown(f"**Dropoff Location:** {dropoff_location}")
+
+                    with col2:
+                        st.markdown(f"<h5 style='color: #34495e;'>💳 Payment & Status</h5>", unsafe_allow_html=True)
+                        st.markdown(f"**Duration:** {duration} hours")
+                        st.markdown(f"**Payment:** ${payment}")
+                        st.markdown(f"**Payment Status:** {payment_status}")
+                        st.markdown(f"**Car Number Plate:** {car_number_plate if car_number_plate else 'Not Assigned'}")
+                        st.markdown(f"**Status:** {status}")
+
+                    st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("Mark as Completed", key=f"complete-{request_id}"):
+            try:
+                cur.execute("""
+                    UPDATE Request 
+                    SET status = 'Completed' 
+                    WHERE request_id = %s
+                    RETURNING car_number_plate
+                """, (request_id,))
+                car_number = cur.fetchone()[0]
+                cur.execute("CALL finalize_booking(%s, %s, %s)", (request_id, driver_id, car_number))
+                conn.commit()
+                st.success(f"Booking {request_id} marked as completed!")
+            except Exception as e:
+                conn.rollback()
+                st.error(f"Error: {str(e)}")
+        st.markdown("---")
     else:
         st.info("No current assignments.")
 

@@ -23,6 +23,10 @@ cursor = connection.cursor()
 def create_tables():
     #try:
         # Create Customer table
+    try:
+        # Enable uuid-ossp extension
+        cursor.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS Customer (
                 customer_id VARCHAR(50) PRIMARY KEY,
@@ -125,6 +129,7 @@ def create_tables():
                status VARCHAR(20),
                total_amount NUMERIC,
                payment_id VARCHAR(50),
+               owner_share NUMERIC,
                FOREIGN KEY (request_id) REFERENCES Request(request_id),
                FOREIGN KEY (driver_id) REFERENCES Driver(driver_id),
                FOREIGN KEY (car_number_plate) REFERENCES Car(car_number)
@@ -180,23 +185,15 @@ def create_tables():
             RETURNS NUMERIC AS $$
             DECLARE
                 v_total_earnings NUMERIC := 0;
-                v_duration NUMERIC;
+                v_total_amount NUMERIC;
                 v_car_type VARCHAR;
             BEGIN
-                FOR v_duration, v_car_type IN 
-                    SELECT duration, car_type 
-                    FROM Request 
-                    WHERE assigned_driver = p_driver_id AND status = 'Completed'
+                FOR v_total_amount IN 
+                    SELECT total_amount 
+                    FROM Rental 
+                    WHERE driver_id = p_driver_id AND status = 'Completed'
                 LOOP
-                    v_total_earnings := v_total_earnings + 
-                        CASE UPPER(v_car_type)
-                            WHEN 'PREMIO' THEN v_duration * 20
-                            WHEN 'COROLLA' THEN v_duration * 15
-                            WHEN 'X COROLLA' THEN v_duration * 18
-                            WHEN 'NOAH' THEN v_duration * 25
-                            WHEN 'WAGON' THEN v_duration * 22
-                            WHEN 'TRUCK' THEN v_duration * 30
-                            ELSE v_duration * 10
+                    v_total_earnings := v_total_earnings + v_total_amount*0.3
                         END;
                 END LOOP;
                 RETURN ROUND(v_total_earnings, 2);
@@ -498,7 +495,7 @@ def create_tables():
                     WHEN 'TRUCK' THEN v_duration * 70
                     ELSE v_duration * 30
                 END;
-                v_owner_share := v_total_amount * 0.7;
+                v_owner_share := v_total_amount * 0.6;
 
                 INSERT INTO Rental (
                     rental_id, request_id, driver_id, car_number_plate,
@@ -520,7 +517,7 @@ def create_tables():
         connection.commit()
         #st.write("Tables created successfully.")
 
-    #except Exception as e:
+    except Exception as e:
         #st.error(f"An error occurred while creating tables: {e}")
         connection.rollback()
 

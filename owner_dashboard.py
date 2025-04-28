@@ -1,6 +1,7 @@
 import streamlit as st
 from database import connect
 from utils import display_profile_update
+from customer_dashboard import car_rate
 
 def show_dashboard():
     st.title("Car Owner Dashboard")
@@ -76,6 +77,9 @@ def add_car(cur, conn):
     model = st.text_input("Car Model")
     seats = st.number_input("No. Of Seats", min_value=1, step=1)
     car_type = st.selectbox("Car Type", ["Premio", "Corolla", "X Corolla", "Noah", "Wagon", "Truck"])
+    st.write("Rate")
+    rate=car_rate(car_type)
+    st.write(f"{rate}$/hr")
     availability_status = st.selectbox("Availability Status", ["Available", "Not Available"])
 
     if st.button("Add Car"):

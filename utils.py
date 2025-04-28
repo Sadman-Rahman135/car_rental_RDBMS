@@ -21,6 +21,24 @@ def validate_phone(phone):
 def validate_password(password):
     return len(password)>=6
 
+def phone_from_id(table, id):
+    id_field=f"{table}_id"
+    conn=connect()
+    query = f"""
+        SELECT phone
+        FROM {table}
+        WHERE {id_field}= %s
+    """
+
+    try:
+        cur = conn.cursor()
+        cur.execute(query, (id,))
+        phone = cur.fetchone()[0]
+        cur.close()
+        return phone
+    except Exception:
+        return False
+
 table_map={
         'admin': 'Admin',
         'car_owner': 'Car_Owner',

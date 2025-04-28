@@ -2,7 +2,7 @@ import streamlit as st
 import psycopg2
 from database import connect
 import uuid
-from utils import display_profile_update
+from utils import display_profile_update, phone_from_id
 
 def show_dashboard():
     st.title("Customer Dashboard")
@@ -15,7 +15,7 @@ def show_dashboard():
     if st.button("Refresh Dashboard"):
         st.rerun()
 
-    page = st.sidebar.selectbox("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars", "Advanced Reports"])
+    page = st.sidebar.radio("Select Option", ["Make a Booking", "View Bookings", "Profile", "Cars", "Advanced Reports"])
 
     if page == "Make a Booking":
         make_booking()
@@ -28,15 +28,35 @@ def show_dashboard():
     elif page == "Advanced Reports":
         advanced_reports()
 
+def car_rate(car_type):
+    car_rate={
+    "Premio": 50, 
+    "Corolla": 40, 
+    "X Corolla": 45, 
+    "Noah": 60, 
+    "Wagon": 55, 
+    "Truck": 70
+}
+    
+    return car_rate.get(car_type)
+
+#car_rate = car_rate()
+
 def make_booking():
     st.header("Make a Booking")
 
     car_type = st.selectbox("Car Type", ["Premio", "Corolla", "X Corolla", "Noah", "Wagon", "Truck"])
+    st.write("Rate")
+    rate=car_rate(car_type)
+    st.write(f"{rate}$/hr")
     pickup_date = st.date_input("Pickup Date")
     dropoff_date = st.date_input("Dropoff Date")
     pickup_location = st.text_input("Pickup Location")
     dropoff_location = st.text_input("Dropoff Location")
     duration = st.number_input("Duration (in hours)", min_value=1, step=1)
+    payment=duration*rate
+    st.write("Payment")
+    st.write(payment)
     payment_status = st.selectbox("Payment Status", ["Pending", "Paid"])
 
     if st.button("Submit Booking"):
@@ -97,7 +117,7 @@ def view_bookings():
         cur.execute("""
             SELECT r.request_id, r.car_type, r.pickup_date, r.dropoff_date, r.pickup_location, 
                    r.dropoff_location, r.duration, r.payment_status, r.status, 
-                   car.model, d.first_name || ' ' || d.last_name AS driver_name
+                   car.model, d.first_name || ' ' || d.last_name AS driver_name, d.driver_id
             FROM Request r
             LEFT JOIN Car car ON r.car_number_plate = car.car_number
             LEFT JOIN Driver d ON r.assigned_driver = d.driver_id
@@ -106,17 +126,33 @@ def view_bookings():
         bookings = cur.fetchall()
         if bookings:
             for b in bookings:
-                st.write(f"Booking ID: {b[0]}")
-                st.write(f"Car Type: {b[1]} (Model: {b[9] or 'Not Assigned'})")
-                st.write(f"Pickup Date: {b[2]}")
-                st.write(f"Dropoff Date: {b[3]}")
-                st.write(f"Pickup Location: {b[4]}")
-                st.write(f"Dropoff Location: {b[5]}")
-                st.write(f"Duration: {b[6]} hours")
-                st.write(f"Payment Status: {b[7]}")
-                st.write(f"Status: {b[8]}")
-                st.write(f"Driver: {b[10] or 'Not Assigned'}")
-                st.markdown("---")
+                phone=phone_from_id('driver', b[11])
+                with st.expander(f"**Booking ID:** {b[0]} **Status:** {b[8]}"):
+                    with st.container():
+                        st.markdown(f"<h5 style='color: #34495e;'>🆔 Booking Information</h5>", unsafe_allow_html=True)
+                       
+                        st.markdown("---")
+
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+                            st.markdown(f"<h5 style='color: #34495e;'>🚘 Car & Trip Details</h5>", unsafe_allow_html=True)
+                            st.markdown(f"**Car Type:** {b[1]}")
+                            st.markdown(f"**Model:** {b[9] or 'Not Assigned'}")
+                            st.markdown(f"**Pickup Date:** {b[2]}")
+                            st.markdown(f"**Dropoff Date:** {b[3]}")
+                            st.markdown(f"**Pickup Location:** {b[4]}")
+                            st.markdown(f"**Dropoff Location:** {b[5]}")
+
+                        with col2:
+                            st.markdown(f"<h5 style='color: #34495e;'>💳 Payment & Status</h5>", unsafe_allow_html=True)
+                            st.markdown(f"**Duration:** {b[6]} hours")
+                            st.markdown(f"**Payment Status:** {b[7]}")
+                            st.markdown(f"**Status:** {b[8]}")
+                            st.markdown(f"**Driver:** {b[10] or 'Not Assigned'}")
+                        
+                        st.markdown("---")
+
         else:
             st.info("No bookings found.")
         conn.close()
