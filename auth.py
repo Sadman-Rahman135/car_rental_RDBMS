@@ -1,7 +1,7 @@
 import streamlit as st
 import bcrypt
 from database import create_user_customer, create_user_driver, create_user_CarOwner, authenticate_user
-
+from email_verify import send_verification_email,verify_code,generate_verification_code
 def registerCustomer():  #Customer Registration
     st.title("Customer Registration")
      # Input fields for customer data
@@ -51,12 +51,34 @@ def registerDriver():  #Driver registration
         if not all([first_name, last_name, email, password, phone, address, location, license_number, account_status]):
                 st.error("Please fill in all the fields.")
         else:
-            try:
-                create_user_driver(first_name, last_name, email, hashed_pw, phone, address, location, license_number, account_status)
-                st.success("Driver registered successfully!")
-                st.session_state.logged_in = True
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+            # Generate and send verification code
+            verification_code = generate_verification_code()
+            if send_verification_email(email, verification_code):
+                # Get user input for verification code
+                user_code = st.text_input("Enter the verification code sent to your email:")
+                if user_code:
+                    # Verify the code
+                    if verify_code(verification_code, user_code):
+                        print("verifiedd")
+                        try:
+                            create_user_customer(first_name, last_name, email, hashed_pw, phone, address,
+                                                 account_status)
+                            st.success("Customer registered successfully!")
+                            st.session_state.logged_in = True
+                        except Exception as e:
+                            st.error(f"An error occurred: {e}")
+                    else:
+                        st.error("Invalid verification code. Please try again.")
+            else:
+                st.error("Failed to send verification email. Please try again.")
+
+        # else:
+        #     try:
+        #         create_user_driver(first_name, last_name, email, hashed_pw, phone, address, location, license_number, account_status)
+        #         st.success("Driver registered successfully!")
+        #         st.session_state.logged_in = True
+        #     except Exception as e:
+        #         st.error(f"An error occurred: {e}")
 
 def registerCarOwner(): # Car owner registration
     st.title("Car Owner Registration")
