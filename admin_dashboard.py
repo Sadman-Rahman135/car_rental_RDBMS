@@ -216,7 +216,7 @@ def view_cars():
         # Apply filters
         filtered_cars = cars
         if filter_status == "Available":
-            filtered_cars = [c for c in cars if c[5] == "available"]
+            filtered_cars = [c for c in cars if c[5] == "Available"]
         elif filter_status == "Not Available":
             filtered_cars = [c for c in cars if c[5] == "not available"]  # Assuming 'inactive' is the DB value
         
