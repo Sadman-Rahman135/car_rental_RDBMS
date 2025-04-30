@@ -170,21 +170,21 @@ def show_current_assignments(cur, driver_id, conn):
                         st.markdown(f"**Status:** {status}")
 
                     st.markdown("</div>", unsafe_allow_html=True)
-        if st.button("Mark as Completed", key=f"complete-{request_id}"):
-            try:
-                cur.execute("""
-                    UPDATE Request 
-                    SET status = 'Completed' 
-                    WHERE request_id = %s
-                    RETURNING car_number_plate
-                """, (request_id,))
-                car_number = cur.fetchone()[0]
-                cur.execute("CALL finalize_booking(%s, %s, %s)", (request_id, driver_id, car_number))
-                conn.commit()
-                st.success(f"Booking {request_id} marked as completed!")
-            except Exception as e:
-                conn.rollback()
-                st.error(f"Error: {str(e)}")
+                if st.button("Mark as Completed", key=f"complete-{request_id}"):
+                    try:
+                        cur.execute("""
+                            UPDATE Request 
+                            SET status = 'Completed' 
+                            WHERE request_id = %s
+                            RETURNING car_number_plate
+                        """, (request_id,))
+                        car_number = cur.fetchone()[0]
+                        cur.execute("CALL finalize_booking(%s, %s, %s)", (request_id, driver_id, car_number))
+                        conn.commit()
+                        st.success(f"Booking {request_id} marked as completed!")
+                    except Exception as e:
+                        conn.rollback()
+                        st.error(f"Error: {str(e)}")
         st.markdown("---")
     else:
         st.info("No current assignments.")

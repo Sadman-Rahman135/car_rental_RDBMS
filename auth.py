@@ -60,27 +60,14 @@ def registerDriver():  #Driver registration
         elif not validate_email(email):
             st.error("Incorrect email format")
         else:
-            # Generate and send verification code
-            verification_code = generate_verification_code()
-            if send_verification_email(email, verification_code):
-                # Get user input for verification code
-                user_code = st.text_input("Enter the verification code sent to your email:")
-                if user_code:
-                    # Verify the code
-                    if verify_code(verification_code, user_code):
-                        print("verified")
-                        try:
-                            create_user_customer(first_name, last_name, email, hashed_pw, phone, address,
-                                                 account_status)
-                            st.success("Customer registered successfully!")
-                            st.session_state.logged_in = True
-                        except Exception as e:
-                            st.error(f"An error occurred: {e}")
-                    else:
-                        st.error("Invalid verification code. Please try again.")
-            else:
-                st.error("Failed to send verification email. Please try again.")
-
+            try:
+                create_user_customer(first_name, last_name, email, hashed_pw, phone, address,
+                                        account_status)
+                st.success("Customer registered successfully!")
+                st.session_state.logged_in = True
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+        
         # else:
         #     try:
         #         create_user_driver(first_name, last_name, email, hashed_pw, phone, address, location, license_number, account_status)

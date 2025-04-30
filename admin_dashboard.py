@@ -245,7 +245,7 @@ def view_cars():
             car_id, car_number, model, seats, car_owner_id, availability_status, car_type = cars
             
             # Color code status
-            status_color = "🟢" if availability_status == "available" else "🔴"
+            status_color = "🟢" if availability_status == "Available" else "🔴"
             
             with st.expander(f"{idx}. {car_id} {model} {status_color}({availability_status})", expanded=False):
                 cols = st.columns([1, 3])
@@ -563,18 +563,27 @@ def manage_requests():
     overdue_requests = cur.fetchall()
 
     if overdue_requests:
-        st.write("The following requests are overdue:")
-        for req in overdue_requests:
-            st.write(f"Request ID: {req[0]}")
-            st.write(f"Customer ID: {req[1]}")
-            st.write(f"Car Type: {req[2]}")
-            st.write(f"Pickup Date: {req[3]}")
-            st.write(f"Dropoff Date: {req[4]}")
-            st.write(f"Pickup Location: {req[5]}")
-            st.write(f"Dropoff Location: {req[6]}")
-            st.write(f"Duration: {req[7]} hours")
-            st.write(f"Status: {req[8]}")
-            st.markdown("---")
+        st.markdown("**Overdue Requests**")
+        for idx, req in enumerate(overdue_requests, 1):
+            request_id, customer_id, car_type, pickup_date, dropoff_date, pickup_location, dropoff_location, duration, status = req
+            with st.expander(f"Request {idx}: ID {request_id} ({status})", expanded=False):
+                cols = st.columns([1, 2])
+                with cols[0]:
+                    st.markdown(f"""
+                    **Request ID:** {request_id}  
+                    **Customer ID:** {customer_id}  
+                    **Car Type:** {car_type}  
+                    **Duration:** {duration} hours  
+                    **Status:** {status}
+                    """)
+                with cols[1]:
+                    st.markdown(f"""
+                    **Pickup Date:** {pickup_date}  
+                    **Dropoff Date:** {dropoff_date}  
+                    **Pickup Location:** {pickup_location}  
+                    **Dropoff Location:** {dropoff_location}
+                    """)
+                st.markdown("---")
         
         if st.button("Cancel All Overdue Requests"):
             try:
